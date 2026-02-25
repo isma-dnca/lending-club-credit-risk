@@ -19,6 +19,9 @@ Thumbs.db
 # Conda
 *.conda
 *.env
+venv/
+.env/
+
 
 # Models / outputs
 models/
