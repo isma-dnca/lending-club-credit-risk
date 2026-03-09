@@ -1,32 +1,30 @@
-# Python cache
+# Python
 __pycache__/
 *.pyc
 
 # Jupyter
 .ipynb_checkpoints/
 
-# VS Code
+# VS Code (local editor settings)
 .vscode/
 
-# Data (keep raw locally if dataset is huge)
-data/raw/
-data/processed/
-
-# Env / OS
+# Operating system junk
 .DS_Store
 Thumbs.db
 
+# Environment files
+.env
+.env/
+venv/
+
 # Conda
 *.conda
-*.env
-venv/
-.env/
 
+# Data (datasets should not be committed)
+data/raw/
+data/processed/
 
-# Models / outputs
+# Model artifacts / outputs
 models/
 outputs/
 reports/
-
-# Dataset (it is too large more than 100MB)
-data/raw/LC_loans_granting_model_dataset.csv
