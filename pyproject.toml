@@ -1,7 +1,19 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "lending-club-credit-risk"
 version = "0.1.0"
+description = "Machine learning pipeline for Lending club credit risk prediction "
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = Ismail AIT-LAHSSEN}
+]
+
+[tool.setuptools]
+package_dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
