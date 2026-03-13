@@ -3,7 +3,7 @@ from pathlib import Path
 #----------------------------------
 # Project Root
 #----------------------------------
-#The root directory of the repository, which is one level above the src/ directory.
+# The root directory of the repository, which is one level above the src/ directory.
 # This resolve the path to the folder containing : 
 # src/, data/, notebooks/, README.md, etc.
 
@@ -28,5 +28,5 @@ RAW_DATA_FILE = RAW_DATA_DIR / "LC_loans_granting_model_dataset.csv"
 # Random seed for reproducibility
 #----------------------------------
 
-RANDOM_STATE = 42   
+RANDOM_STATE = 42       
 

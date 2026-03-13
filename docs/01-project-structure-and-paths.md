@@ -3,11 +3,13 @@
 
 ## Purpose Of This Doc
 
-Documenting everything related to structuring the project properly, like :
+Documenting everything related to structuring the project properly, like : 
+
     -   How to organize the code base (`src/`, `data`, `docs`, etc)
     -   How to handle the **paths** cleanly and properly
     -   How to import modules without errors
     -   How to make the project **stable, reproducible, and scalable**
+
 The main goal is to eliminate the classic excuse of every cooder:
     **`"It works on my machine"`**
 So the project must be work the same way in every machine, at any time, as long as the environment is correctly installed.
@@ -28,8 +30,7 @@ On my local machine the projects live exactly here :
     `C:\Users\Utilisateur\Desktop\...\\lending-club-credit-risk>`
 
 But when documenting it is recommended to refer to it as `PROJECT_ROOT/` to stay clean and professional,
-because that previous path ("`C:\Users\Utilisateur\Desktop\...\\lending-club-credit-risk>`") it only
-lives in my machine.
+that previous path ("`C:\Users\Utilisateur\Desktop\...\\lending-club-credit-risk>`") it only lives in my machine.
 
 ## Step 2 : Organizing projects folders : High-Level Layout
 
@@ -60,7 +61,7 @@ So at the root, the project contains :
                                                         suggest installing these automatically. Useful ones:
                                                         - ms-python.python        (Python support)
                                                         - ms-toolsai.jupyter      (Jupyter notebooks)
-                                                        - charliermarsh.ruff      (fast Python linter (a linter is a tool to      
+                                                        - charliermarsh.ruff      (fast Python linter (a      linter is a tool to      
                                                                                      automatically analyse code and flag style or potential error issues, all this in order to improve the quality of our code))
                                                         - eamodio.gitlens         (better Git visibility)
                             
