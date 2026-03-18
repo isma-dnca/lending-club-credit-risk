@@ -1,6 +1,7 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 
 from src.config import RANDOM_STATE
 from src.data.load import load_raw_data
@@ -27,7 +28,7 @@ def main() -> None:
     X = X.drop(columns=COLUMNS_TO_DROP, errors="ignore")
 
     # 5. Quick inspection of categorical features before encoding
-    cat_cols = X.select_dtypes(include=["object"]).columns
+    cat_cols = X.select_dtypes(include=["object","string"]).columns
 
     print(f"Raw X shape: {X.shape}")
     print(f"y shape: {y.shape}")
@@ -67,11 +68,22 @@ def main() -> None:
     model = LogisticRegression(
         max_iter=1000,
         solver="saga",
-        n_jobs=-1,
     )
 
-    # Training and evaluation will be added in the next step
-    # model.fit(X_train, y_train)
+    # 11. Train the model
+    model.fit(X_train, y_train)
+
+    # 12. Make predictions
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)[:, 1]
+
+    # 13. Evaluate the model proporly
+
+    print("\nEvaluation Metrics:")
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+    print(f"AUC-ROC: {roc_auc_score(y_test, y_proba):.4f}")
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred, zero_division=0))
 
     print("\nPipeline executed successfully.")
     print(model)
