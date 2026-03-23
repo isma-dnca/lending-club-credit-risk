@@ -57,7 +57,7 @@ def main() -> None:
     print(f"Encoded X_train shape: {X_train.shape}")
     print(
         "Remaining object columns:",
-        X_train.select_dtypes(include=["object"]).shape[1],
+        X_train.select_dtypes(include=["object","string"]).shape[1],
     )
 
     # 9. Reduce memory usage
@@ -68,6 +68,7 @@ def main() -> None:
     model = LogisticRegression(
         max_iter=1000,
         solver="saga",
+        class_weight="balanced",
     )
 
     # 11. Train the model
