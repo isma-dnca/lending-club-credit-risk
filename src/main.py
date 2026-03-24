@@ -2,6 +2,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
+from sklearn.metrics import confusion_matrix
+
 
 from src.config import RANDOM_STATE
 from src.data.load import load_raw_data
@@ -75,8 +77,16 @@ def main() -> None:
     model.fit(X_train, y_train)
 
     # 12. Make predictions
-    y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1]
+
+    threshold = 0.3
+    y_pred = (y_proba >= threshold).astype(int)
+    
+    cm = confusion_matrix(y_test, y_pred)
+
+    print("\nConfusion Matrix:")
+    print(cm)
+    
 
     # 13. Evaluate the model proporly
 
