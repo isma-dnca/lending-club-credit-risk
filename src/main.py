@@ -76,25 +76,28 @@ def main() -> None:
     # 11. Train the model
     model.fit(X_train, y_train)
 
-    # 12. Make predictions
+    # 12. Make predictions & Evaluate the model properly using probabilities and multiple thresholds
+
     y_proba = model.predict_proba(X_test)[:, 1]
 
-    threshold = 0.3
-    y_pred = (y_proba >= threshold).astype(int)
+    threshold = [0.3, 0.4, 0.5, 0.6, 0.7]
+    for t in threshold:
+        print(f"\n ---- THRESHOLD: {t} ----")
+
+        y_pred = (y_proba >= t).astype(int)
     
-    cm = confusion_matrix(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred)
 
-    print("\nConfusion Matrix:")
-    print(cm)
+        print("\nConfusion Matrix:")
+        print(cm)
+        print("\nEvaluation Metrics:")
+        print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+        print(f"AUC-ROC: {roc_auc_score(y_test, y_proba):.4f}")
+        print("\nClassification Report:")
+        print(classification_report(y_test, y_pred, zero_division=0))
+
+
     
-
-    # 13. Evaluate the model proporly
-
-    print("\nEvaluation Metrics:")
-    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
-    print(f"AUC-ROC: {roc_auc_score(y_test, y_proba):.4f}")
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred, zero_division=0))
 
     print("\nPipeline executed successfully.")
     print(model)
