@@ -96,7 +96,6 @@ python -m src.main
 ```
 
 ---
-
 ## Current Pipeline Status
 
 | Step | Status |
@@ -108,18 +107,19 @@ python -m src.main
 | Train / test split | ✅ Complete |
 | One-hot encoding | ✅ Complete |
 | Feature alignment | ✅ Complete |
-| Baseline logistic regression setup | ✅ Complete |
+| Baseline logistic regression training | ✅ Complete |
+| Baseline evaluation (accuracy, ROC-AUC, classification report, confusion matrix) | ✅ Complete |
+| Threshold tuning experiment | ✅ Complete |
 
 ---
 
 ## Planned Improvements
 
-- [ ] Train the baseline logistic regression model
-- [ ] Evaluate performance with classification metrics (accuracy, AUC-ROC, F1)
-- [ ] Refactor preprocessing into reusable, testable functions
+- [ ] Improve feature engineering, especially date-related information such as `issue_d`
+- [ ] Try stronger models such as XGBoost or LightGBM
 - [ ] Add dedicated model modules for training and evaluation
-- [ ] Improve feature documentation and column descriptions
 - [ ] Save processed artifacts and trained models to disk
+- [ ] Add clearer result tracking across experiments
 
 ---
 
@@ -131,14 +131,15 @@ Additional project notes are available in the `docs/` folder:
 |---|---|
 | `00-environment-setup.md` | Conda environment creation and activation steps |
 | `01-project-structure-and-paths.md` | Root path configuration and import patterns |
-| `02-Columns.md` | Dataset column definitions and feature descriptions |
-| `03-Launch-Protocol.md` | Work session startup checklist and workflow |
+| `02-columns.md` | Dataset column definitions and feature descriptions |
+| `03-launch-protocol.md` | Work session startup checklist and workflow |
+| `04-baseline-model-analysis.md` | Baseline model behavior, confusion matrix analysis, and threshold comparison |
 
 ---
 
 ## Purpose of This Repository
 
-> This repository demonstrates that strong ML projects combine accurate models with clean engineering, reproducible environments, and clear documentation.
+> This repository demonstrates that strong ML projects combine model experimentation with clean engineering, reproducible environments, and clear documentation.
 
 ---
 
@@ -146,26 +147,44 @@ Additional project notes are available in the `docs/` folder:
 
 ### Logistic Regression (default settings)
 
-- Accuracy : 0.8013
-- ROC-AUC : 0.5446
-- Recall : 0.00 (for default class)
-  
-  **Observation:**
-  The model achieved high accuracy 80% by predicting mostly the non-default class (class 0)
-  It is completely failed to detect the default class (class 1), so it is useless and ineffective for desired outcome and the actual task that we are targeting.
-  So the problem here is that our data is not balanced.
+- Accuracy: 0.8013
+- ROC-AUC: 0.5446
+- Recall (default class): 0.00
 
-  ### Logistic Regression (`class_weight="balanced"`)
-  - Accuracy: 0.5434  
-  - ROC-AUC: 0.5911  
-  - Recall (default class ): 0.61  
-  - Precision (default class): 0.24  
-  
-  **Observation:**
-  Adding class weighting improved the detection of default cases significantly. However, precision is low 24%, meaning many predicted defaults are incorrect (detecting false positive)
+**Observation:**  
+The model achieved high accuracy mainly by predicting almost all clients as non-default.  
+In practice, it completely failed to detect the default class, so this result was misleading and not useful for the real objective.
 
-  ### key insight 
-  This experiments highlights the impact of class imbalance.
-  We have indeed noticed that *Accuracy* alone is misleading. Thus, a model can appear strong while being useless. *Recall* and *ROC-AUC* gave us a good insight for this problem 
+### Logistic Regression (`class_weight="balanced"`)
 
-  So, the balanced model is more realistic baseline, even when the accuracy is low.
+- Accuracy: 0.5434
+- ROC-AUC: 0.5911
+- Recall (default class): 0.61
+- Precision (default class): 0.24
+
+**Observation:**  
+Adding class weighting improved default detection significantly.  
+The model became more useful for catching risky clients, but it also created many false positives.
+
+### Threshold Tuning Summary
+
+To better understand model behavior, several thresholds were tested:
+
+| Threshold | Accuracy | Default Recall | Default Precision | Default F1 | Behavior |
+|---|---:|---:|---:|---:|---|
+| **0.3** | 0.21 | **0.99** | 0.20 | 0.33 | Too aggressive — flags almost everyone |
+| **0.5** | 0.54 | 0.61 | 0.24 | 0.35 | More balanced, but still weak |
+| **0.7** | **0.80** | 0.00 | 1.00 | 0.00 | Too strict — misses almost all defaults |
+
+### Key Insight
+
+These experiments showed three important things:
+
+- Accuracy alone is misleading in imbalanced classification
+- Threshold tuning changes how aggressive the model is
+- The threshold changes prediction behavior, but it does not improve the model itself
+
+This is clear because the ROC-AUC stayed around **0.59** across all thresholds, which means the baseline model is still weak overall.
+
+For the full detailed analysis, including confusion matrices and threshold-by-threshold interpretation, see: - `docs/04-baseline-model-analysis.md`
+
