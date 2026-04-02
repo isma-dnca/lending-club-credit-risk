@@ -1,9 +1,8 @@
+from lightgbm import LGBMClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
-from sklearn.metrics import confusion_matrix
-
 
 from src.config import RANDOM_STATE
 from src.data.load import load_raw_data
@@ -13,6 +12,9 @@ from src.features.preprocess import basic_cleaning, split_target
 TARGET_COLUMN = "default"
 SAMPLE_SIZE = 200_000
 COLUMNS_TO_DROP = ["id", "title", "desc", "zip_code"]
+
+RUN_LOGISTIC = False
+RUN_LIGHTGBM = True
 
 
 def main() -> None:
@@ -30,7 +32,7 @@ def main() -> None:
     X = X.drop(columns=COLUMNS_TO_DROP, errors="ignore")
 
     # 5. Quick inspection of categorical features before encoding
-    cat_cols = X.select_dtypes(include=["object","string"]).columns
+    cat_cols = X.select_dtypes(include=["object", "string"]).columns
 
     print(f"Raw X shape: {X.shape}")
     print(f"y shape: {y.shape}")
@@ -59,48 +61,80 @@ def main() -> None:
     print(f"Encoded X_train shape: {X_train.shape}")
     print(
         "Remaining object columns:",
-        X_train.select_dtypes(include=["object","string"]).shape[1],
+        X_train.select_dtypes(include=["object", "string"]).shape[1],
     )
 
     # 9. Reduce memory usage
     X_train = X_train.astype("float32")
     X_test = X_test.astype("float32")
 
-    # 10. Define baseline logistic regression model
-    model = LogisticRegression(
-        max_iter=1000,
-        solver="saga",
-        class_weight="balanced",
-    )
+    # 10. Logistic Regression
+    if RUN_LOGISTIC:
+        print("\n==============================")
+        print("Logistic Regression")
+        print("==============================")
 
-    # 11. Train the model
-    model.fit(X_train, y_train)
+        model = LogisticRegression(
+            max_iter=1000,
+            solver="saga",
+            class_weight="balanced",
+        )
 
-    # 12. Make predictions & Evaluate the model properly using probabilities and multiple thresholds
+        model.fit(X_train, y_train)
+        y_proba = model.predict_proba(X_test)[:, 1]
 
-    y_proba = model.predict_proba(X_test)[:, 1]
+        thresholds = [0.3, 0.4, 0.5, 0.6, 0.7]
 
-    threshold = [0.3, 0.4, 0.5, 0.6, 0.7]
-    for t in threshold:
-        print(f"\n ---- THRESHOLD: {t} ----")
+        for t in thresholds:
+            print(f"\n---- THRESHOLD: {t} ----")
 
-        y_pred = (y_proba >= t).astype(int)
-    
-        cm = confusion_matrix(y_test, y_pred)
+            y_pred = (y_proba >= t).astype(int)
 
-        print("\nConfusion Matrix:")
-        print(cm)
-        print("\nEvaluation Metrics:")
-        print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
-        print(f"AUC-ROC: {roc_auc_score(y_test, y_proba):.4f}")
-        print("\nClassification Report:")
-        print(classification_report(y_test, y_pred, zero_division=0))
+            print("\nConfusion Matrix:")
+            print(confusion_matrix(y_test, y_pred))
 
+            print("\nEvaluation Metrics:")
+            print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+            print(f"AUC-ROC: {roc_auc_score(y_test, y_proba):.4f}")
 
-    
+            print("\nClassification Report:")
+            print(classification_report(y_test, y_pred, zero_division=0))
+
+    # 11. LightGBM
+    if RUN_LIGHTGBM:
+        print("\n==============================")
+        print("LightGBM")
+        print("==============================")
+
+        lgbm = LGBMClassifier(
+            n_estimators=100,
+            learning_rate=0.1,
+            random_state=RANDOM_STATE,
+            n_jobs=-1,
+        )
+
+        lgbm.fit(X_train, y_train)
+
+        y_proba_lgbm = lgbm.predict_proba(X_test)[:, 1]
+
+        thresholds = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+
+        for t in thresholds:
+            print(f"\n---- LightGBM THRESHOLD: {t} ----")
+
+            y_pred = (y_proba_lgbm >= t).astype(int)
+
+            print("\nConfusion Matrix:")
+            print(confusion_matrix(y_test, y_pred))
+
+            print("\nEvaluation Metrics:")
+            print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+            print(f"AUC-ROC: {roc_auc_score(y_test, y_proba_lgbm):.4f}")
+
+            print("\nClassification Report:")
+            print(classification_report(y_test, y_pred, zero_division=0))
 
     print("\nPipeline executed successfully.")
-    print(model)
 
 
 if __name__ == "__main__":

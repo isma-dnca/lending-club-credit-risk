@@ -80,11 +80,11 @@ conda install numpy pandas scikit-learn
 
 And guess what... yes, it works. But the problems are:
 
-- **Only you know what's installed** - You're the only one who knows the exact setup on your machine
-- **Your laptop/machine/PC is the only place where the project works** - It's not reproducible elsewhere
-- **Others will struggle** - If you send your project to someone else, they won't be able to set it up easily
-- **Everything is vulnerable** - If issues affect your operating system, everything could be lost
-- **No GitHub reproducibility** - If you push it to GitHub, nobody can reproduce your exact setup
+- **Only you know what's installed** : You're the only one who knows the exact setup on your machine
+- **Your laptop/machine/PC is the only place where the project works** : It's not reproducible elsewhere
+- **Others will struggle** : If you send your project to someone else, they won't be able to set it up easily
+- **Everything is vulnerable** : If issues affect your operating system, everything could be lost
+- **No GitHub reproducibility** : If you push it to GitHub, nobody can reproduce your exact setup
 
 So instead of installing packages randomly, we create a recipe file that we call `environment.yml`.
 
