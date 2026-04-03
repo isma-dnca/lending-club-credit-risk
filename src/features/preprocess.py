@@ -104,3 +104,29 @@ def engineer_issue_date_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["issue_d"])
 
     return df
+
+def engineer_emp_length(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    if "emp_length" not in df.columns:
+        return df
+
+    mapping = {
+        "< 1 year": 0,
+        "1 year": 1,
+        "2 years": 2,
+        "3 years": 3,
+        "4 years": 4,
+        "5 years": 5,
+        "6 years": 6,
+        "7 years": 7,
+        "8 years": 8,
+        "9 years": 9,
+        "10+ years": 10,
+    }
+
+    df["emp_length_num"] = df["emp_length"].map(mapping)
+
+    df = df.drop(columns=["emp_length"])
+
+    return df

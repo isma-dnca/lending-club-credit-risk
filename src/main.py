@@ -9,7 +9,8 @@ from src.data.load import load_raw_data
 from src.features.preprocess import (
     basic_cleaning,
     split_target,
-    engineer_issue_date_features
+    engineer_issue_date_features,
+    engineer_emp_length
 )
 
 
@@ -24,9 +25,12 @@ RUN_LIGHTGBM = True
 def main() -> None:
     # 1. Load and clean raw data
     df = load_raw_data("LC_loans_granting_model_dataset.csv")
+    
     df = basic_cleaning(df)
 
     df = engineer_issue_date_features(df)
+
+    df = engineer_emp_length(df)
 
     # 2. Sample the dataset to control memory usage on the local machine
     df = df.sample(n=SAMPLE_SIZE, random_state=RANDOM_STATE)
