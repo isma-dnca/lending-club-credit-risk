@@ -130,3 +130,17 @@ def engineer_emp_length(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["emp_length"])
 
     return df
+
+
+def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    # numeric columns --> fill with median
+    num_cols = df.select_dtypes(include=["number"]).columns
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+
+    # categorical --> fill with "missing"
+    cat_cols = df.select_dtypes(include=["object", "string"]).columns
+    df[cat_cols] = df[cat_cols].fillna("missing")
+
+    return df
