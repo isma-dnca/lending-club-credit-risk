@@ -110,16 +110,21 @@ python -m src.main
 | Baseline logistic regression training | ✅ Complete |
 | Baseline evaluation (accuracy, ROC-AUC, classification report, confusion matrix) | ✅ Complete |
 | Threshold tuning experiment | ✅ Complete |
+| LightGBM baseline training | Complete |
+| Threshold tunning (LightGBM) | Complete |
 
 ---
 
 ## Planned Improvements
 
 - [ ] Improve feature engineering, especially date-related information such as `issue_d`
-- [ ] Try stronger models such as XGBoost or LightGBM
-- [ ] Add dedicated model modules for training and evaluation
-- [ ] Save processed artifacts and trained models to disk
-- [ ] Add clearer result tracking across experiments
+- [ ] Compare model performance more systematically (Logistic vs LightGBM)
+- [ ] Save trained model artifacts (serialization)
+- [ ] Build a clean inference / prediction function
+- [ ] Prepare API exposure (FastAPI)
+- [ ] Dockerize the service
+- [ ] Add logging and request simulation
+- [ ] Deploy the model as a service
 
 ---
 
@@ -188,3 +193,37 @@ This is clear because the ROC-AUC stayed around **0.59** across all thresholds, 
 
 For the full detailed analysis, including confusion matrices and threshold-by-threshold interpretation, see: - `docs/04-baseline-model-analysis.md`
 
+## LightGBM Model Results
+
+A tree-based model, **LightGBM**, was introduced to improve performance on tabular data.
+
+### AUC Comparison
+
+- Logistic Regression: **0.59**
+- LightGBM: **0.67**
+
+This is a significant improvement and shows that LightGBM better separates risky and safe clients.
+
+---
+
+### Threshold Tuning Summary — LightGBM
+
+| Threshold | Accuracy | Default Recall | Default Precision | Behavior |
+|---|---:|---:|---:|---|
+| **0.2** | 0.62 | **0.63** | 0.29 | Aggressive — catches many defaults |
+| **0.3** | 0.76 | 0.28 | 0.37 | More balanced |
+| **0.4** | 0.80 | 0.08 | 0.44 | Too conservative |
+| **0.5** | 0.80 | 0.01 | 0.46 | Nearly blind to defaults |
+
+---
+
+### Key Insight
+
+LightGBM improves the model’s ability to distinguish risky clients from safe clients.
+
+However, threshold selection still strongly affects behavior:
+
+- Lower thresholds improve recall (catch more defaulters)
+- Higher thresholds reduce false positives but miss risky clients
+
+At this stage, **LightGBM with a lower threshold (around 0.2)** is more suitable for credit risk detection than Logistic Regression.
