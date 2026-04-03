@@ -64,3 +64,43 @@ def split_target(
     y = df[target_column]
 
     return X, y
+
+
+def engineer_issue_date_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create simple date-based features from the `issue_d` column.
+
+    New features:
+    - issue_year
+    - issue_month
+
+    The original `issue_d` column is dropped after transformation.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with engineered date features.
+
+    Raises
+    ------
+    ValueError
+        If `issue_d` is not present in the DataFrame.
+    """
+    df = df.copy()
+
+    if "issue_d" not in df.columns:
+        raise ValueError("'issue_d' not found in DataFrame columns.")
+
+    issue_dates = pd.to_datetime(df["issue_d"], format="%b-%Y", errors="coerce")
+
+    df["issue_year"] = issue_dates.dt.year
+    df["issue_month"] = issue_dates.dt.month
+
+    df = df.drop(columns=["issue_d"])
+
+    return df

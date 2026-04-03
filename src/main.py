@@ -6,7 +6,11 @@ import pandas as pd
 
 from src.config import RANDOM_STATE
 from src.data.load import load_raw_data
-from src.features.preprocess import basic_cleaning, split_target
+from src.features.preprocess import (
+    basic_cleaning,
+    split_target,
+    engineer_issue_date_features
+)
 
 
 TARGET_COLUMN = "default"
@@ -21,6 +25,8 @@ def main() -> None:
     # 1. Load and clean raw data
     df = load_raw_data("LC_loans_granting_model_dataset.csv")
     df = basic_cleaning(df)
+
+    df = engineer_issue_date_features(df)
 
     # 2. Sample the dataset to control memory usage on the local machine
     df = df.sample(n=SAMPLE_SIZE, random_state=RANDOM_STATE)
