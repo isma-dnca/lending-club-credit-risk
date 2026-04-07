@@ -144,3 +144,21 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     df[cat_cols] = df[cat_cols].fillna("missing")
 
     return df
+
+
+def engineer_ratio_features(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    # Loan vs revenue (very important)
+    if "loan_amnt" in df.columns and "revenue" in df.columns:
+        df["loan_to_revenue"] = df["loan_amnt"] / (df["revenue"] + 1)
+
+    # Loan vs credit quality (risk amplification)
+    if "loan_amnt" in df.columns and "fico_n" in df.columns:
+        df["loan_to_fico"] = df["loan_amnt"] / (df["fico_n"] + 1)
+
+    # Revenue vs credit quality (capacity vs trust)
+    if "revenue" in df.columns and "fico_n" in df.columns:
+        df["revenue_to_fico"] = df["revenue"] / (df["fico_n"] + 1)
+
+    return df

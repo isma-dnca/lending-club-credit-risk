@@ -11,7 +11,8 @@ from src.features.preprocess import (
     split_target,
     engineer_issue_date_features,
     engineer_emp_length,
-    handle_missing_values
+    handle_missing_values,
+    engineer_ratio_features
 )
 
 
@@ -34,6 +35,8 @@ def main() -> None:
     df = engineer_emp_length(df)
 
     df = handle_missing_values(df)
+
+    df = engineer_ratio_features(df)
 
     # 2. Sample the dataset to control memory usage on the local machine
     df = df.sample(n=SAMPLE_SIZE, random_state=RANDOM_STATE)
