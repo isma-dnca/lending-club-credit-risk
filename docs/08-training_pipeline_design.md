@@ -440,9 +440,7 @@ This step will prepare the implementation of the full reproducible training pipe
 
 ----------------------------
 
-
-
-## Step 3 - Define what the fitted preprocessor must contain
+## Step 3 - Defining what the fitted preprocessor must contain
 
 The goal of this step is to define what the fitted preprocessor object must contain.
 In my understanding so far, it must contain all the transformations that learn from `X_train` only.
@@ -642,4 +640,169 @@ So the main thing I understand now is this:
 the fitted preprocessor is not “all preprocessing”.
 It is only the part of preprocessing that must be learned from training data and then reused exactly the same way later.
 That is what makes the pipeline professional, reusable, and leakage-safe.
+
+-----------------------------------
+
+## Step 4 - Designing the training pipeline structure
+
+### 4.1 Fixing what needs to be fixed from previous work so far
+
+The goal of this step is to design and define a clear structure of the current pipeline. In other words the objective is to stop mixing everything inside the same python file `src/main.py`. So training logic, preprocessing logic, artifact saving, evaluation logic, and so one must those need to specify where it can live in code in order to make it easy to reuse, test, save artifact cleanly, and understand where leakage-safe preprocessing begins.
+
+### 4.2 Responsibilities
+
+From previous notes in this documenting process, the logical stage and process of my training pipeline responsibilities ae following this order : 
+        1. load raw data
+        2. apply deterministic transformations
+        3. split target and features
+        4. split train/test
+        5. build fitted preprocessor
+        6. transform train/test
+        7. train LightGBM
+        8. evaluate predictions
+        9. save artifacts
+        10.save metadata
+-------------------
+
+### 4.3 Each Module Owns
+
+At this stage I need to decide what each module should own and it is one of the most important part to design a structure training pipeline.
+<ol type="A">
+  <li>Data layer</li>
+    For this layer, it should own and contain reading raw data from `data/raw`, I already have that responsibility at src/data/load.py . So this layer should own only Reading, validation, raw data access and IT does NOT clean or transform. It is layer's B responsibility
+  <li>Feature layer</li>
+    This Layer should own TWO different things :
+    <ol type="i">
+        <li>Deterministic transformation</li>
+            for the columns that are not need any learning for their transformation
+            `basic_cleaning`
+            `engineer_issue_date_features`
+            `engineer_emp_length`
+            `engineer_ratio_features`
+        <li>Preprocessor builder</li> 
+            This should also live in the features layer:
+            - build numeric preprocessing branch
+            - build categorical preprocessing branch
+            - return one fitted-ready preprocessor object
+        An example to structure this layer :
+        ```text
+            src/
+            ├── features/
+            │   ├── __init__.py
+            │   ├── deterministic.py     # i. Deterministic transformations
+            │   ├── preprocessor.py      # ii. Preprocessor builder
+            │   └── config.py            # Feature-specific configs
+        ```
+
+    This still the feature preparation logic and and not yet modeling. This latter it's next layer's responsibility.
+  <li>Modeling layer</li>
+    This layer should own responsibilities that separate from preparation logic like:
+        - model creation
+        - model fitting
+        - prediction
+        - evaluation metrics
+    and this separation is important. Bellow the structure of this layer in repo :
+        ```text
+        src/
+        ├── models/
+        │   ├── __init__.py
+        │   ├── create.py      # Model creation
+        │   ├── train.py       # Model fitting
+        │   ├── predict.py     # Prediction
+        │   ├── evaluate.py    # Evaluation metrics
+        │   └── config.py      # Model hyperparameters
+        ```
+  <li>Pipeline/orchestration layer</li>
+    This layer for orchestration is supposed to contain the end-end order of responsibilities and operations as follow : 
+        Load
+        ↓
+        Deterministic transform
+        ↓
+        Split target
+        ↓
+        Split train/test
+        ↓
+        Fit preprocessor
+        ↓
+        Transform
+        ↓
+        Train model
+        ↓
+        Evaluate
+        ↓
+        Save outputs
+
+    This layer is not supposed to contain the detailed implementation of every step.
+    Its job is orchestration.
+    That is why it makes main.py cleaner.
+
+  <li>Persistence/output layer</li>
+    This should own:
+        - saving model (to prevent any retraining)
+        - saving preprocessor (also no reprocessing)
+        - saving metrics 
+        - saving metadata
+        This can be a small utility module. His core idea is to save the work because Computers are just forgetting when the program is stopped but saving to Disk will remain there for ever so it is a good module for reproducibility and to track progress.
+</ol>
+    
+ ---------------
+
+ ### 4.4 Keeping `main.py` light as possible
+
+At this phase of my project, `main.py` is doing too many things with hundreds of lines of code. This is bad practice.
+**The professional way:** Make `main.py` light, just a remote control, not the whole engine.
+
+**What this means:**
+      - `main.py` should contain only a few lines of code
+      - It should be easy to read
+      - It just orchestrates (calls functions from other modules)
+
+**The benefits:**
+      - Modules become reusable everywhere
+      - To change one thing, edit one module - not `main.py`
+      - Everything else lives in organized modules
+
+**This is what makes a project professional instead of a messy script.**
+---------------
+
+### 4.5 Implementation Order (Fix core issues first)
+
+**Step 1:** Deterministic transformations (clean, fix dates, ratios)
+    this step comes comes first because no learning is needed so it is safe to do at any time.
+**Step 2:** Preprocessor builder (numeric + categorical branches)
+    this step comes second because it needs to be ready before training.
+**Step 3:** Train/test split BEFORE any learned preprocessing
+    train test split is critical because it prevents data leakage.
+**Step 4:** One clean training function for LightGBM
+    train function is the core of the ML pipeline.
+**Step 5:** One clean evaluation function  
+    evaluate function tells us if the model actually works.
+**Step 6:** Save outputs after pipeline works
+    save outputs comes last because we only save if everything works.
+
+The most important rule is that train test split must come before any learned preprocessing.
+Because the wrong way is to fit the preprocessor on all data including the test set. That causes test data to leak into training. The right way is to fit the preprocessor only on the training data.
+
+this prevents data leakage which is a big mistake. When the preprocessor sees the test data it learns from it. Then our model looks good on the test set but fails in the real world.
+
+The fix is simple. Split our data first. Then fit the preprocessor only on the training data. Then transform both training and test sets using that fitted preprocessor.
+
+So to recap, Clean our data first with no learning. Build the preprocessor but do not fit it yet. Split our data. This is the critical step. Then train your model. Check our results. Save only if everything is good.
+
+The core idea is to fix the ML fundamentals before adding any complexity. A clean pipeline that avoids data leakage is worth more than a complex pipeline that cheats.
+
+### 4.6 My final design decision structure for now
+
+I decided on this structure before coding:
+        - src/data/load.py - loads raw data
+        - src/features/preprocess.py - deterministic transformations only
+        - src/features/preprocessor.py - builds the preprocessor
+        - src/modeling/train.py - trains LightGBM
+        - src/modeling/evaluate.py - computes metrics
+        - src/pipeline/train_pipeline.py - runs the full pipeline
+        - src/persistence/save.py - saves model, preprocessor, metrics
+
+
+
+
 
