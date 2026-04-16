@@ -75,3 +75,5 @@ At the top of the file, we can also define simple constants such as:
 - `COLUMNS_TO_DROP = ["id", "title", "desc", "zip_code"]`
 - `RAW_DATA_FILENAME = "LC_loans_granting_model_dataset.csv"`
 - `TEST_SIZE = 0.2`
+
+**Important note:** after ColumnTransformer, transformed outputs may not remain pandas DataFrames. They can become NumPy arrays or sparse matrices depending on the transformers used.
