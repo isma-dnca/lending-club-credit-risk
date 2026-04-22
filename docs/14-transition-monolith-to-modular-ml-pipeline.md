@@ -86,7 +86,3 @@ This refactor improved:
 - reusability: preprocessing, training, and evaluation can be reused elsewhere
 - reproducibility: results and artifacts are now saved
 - extensibility: later we can add tests, inference, API, and metadata much more easily
-
-
-   
- 

@@ -1,6 +1,6 @@
 # Lending Club Credit Risk Prediction
 
-> A machine learning pipeline for loan default risk assessment
+> A modular machine learning pipeline for loan default risk prediction
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue) ![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-green) ![Status](https://img.shields.io/badge/Status-In%20Progress-orange)
 
@@ -8,71 +8,176 @@
 
 ## Project Goal
 
-The goal of this project is to build a clean, reproducible, and well-structured machine learning pipeline for credit risk prediction.
+The goal of this project is to build a clean, reproducible, and modular machine learning pipeline for credit risk prediction.
+At the beginning, the project was driven mostly as one main script. Step by step, it was refactored into separate modules so that each responsibility has its own place.
 
-This repository is designed not only to train a baseline model, but also to follow good ML engineering practices:
-
-- Isolated environment setup
-- Modular project structure
-- Clean data loading and preprocessing
-- Reproducible experimentation
-- Clear documentation
+The current goal is not only to train a model, but to build the project in a way that is closer to real ML engineering practice:
+    - modular preprocessing
+    - leakage-safe train/test workflow
+    - separated training and evaluation logic
+    - reproducible saved artifacts
+    - clear project structure
+    - documentation of each important step
 
 ---
 
 ## Dataset
 
-The dataset is stored at:
-
-```
+The dataset used in this project is stored at:
+```text
 data/raw/LC_loans_granting_model_dataset.csv
 ```
 
-The dataset contains borrower and loan attributes used to predict default risk.
+It contains borrower and loan information used to predict default risk. Some of the available columns include:
 
-- Loan amount
-- FICO score
-- Debt-to-income ratio
-- Employment length
-- Loan purpose
-- Home ownership
-- Address information
-- Text fields: title and description
-
-**Target variable:** `default`
+    - loan amount
+    - fico score
+    - debt-to-income ratio
+    - employment length
+    - loan purpose
+    - address state
+    - home ownership
+    - text columns such as title and desc
+    - Target variable: `default`
 
 ---
 
-## Project Structure
-
-```
+## Current Project Structure
+```bash
 lending-club-credit-risk/
-│
 ├── data/
-│   ├── raw/
-│   └── processed/
-│
+│   ├── processed/
+│   └── raw/
+│       └── LC_loans_granting_model_dataset.csv
 ├── docs/
 │   ├── 00-environment-setup.md
 │   ├── 01-project-structure-and-paths.md
 │   ├── 02-columns.md
-│   └── 03-launch-protocol.md
-│
+│   ├── 03-launch-protocol.md
+│   ├── 04-baseline-model-analysis.md
+│   ├── 05-lightgbm-model-analysis.md
+│   ├── 06-project-roadmap.md
+│   ├── 07-feature-engineering.md
+│   ├── 08-training_pipeline_design.md
+│   ├── 09-build-preprocessor-object.md
+│   ├── 10-build-train_pipeline-script.md
+│   ├── 11-build-train-module.md
+│   ├── 12-model-evaluation.md
+│   ├── 13-artifact-saving.md
+│   ├── 14-transition-monolith-to-modular-ml-pipeline.md
+│   └── 15-first-end-to-end-modular-pipeline-run.md
 ├── notebooks/
-│   └── 01-data-loading-and-exploration.ipynb
-│
+│   ├── 01-data-loading-and-exploration.ipynb
+│   └── 02-exp_lightgbm_model_state_before_after_fit.ipynb
+├── outputs/
+│   ├── models/
+│   │   └── lightgbm_model.joblib
+│   ├── preprocessors/
+│   │   └── preprocessor.joblib
+│   └── reports/
+│       └── metrics.json
 ├── src/
 │   ├── config.py
 │   ├── main.py
 │   ├── data/
 │   │   └── load.py
-│   └── features/
-│       └── preprocess.py
-│
+│   ├── features/
+│   │   ├── preprocess.py
+│   │   └── preprocessor.py
+│   ├── modeling/
+│   │   ├── evaluate.py
+│   │   └── train.py
+│   ├── persistence/
+│   │   └── save_artifacts.py
+│   └── pipeline/
+│       └── train_pipeline.py
 ├── environment.yml
 ├── pyproject.toml
 └── README.md
 ```
+
+---
+
+## What Each Module Does
+
+### `src/data/load.py`
+Responsible for loading raw data from `data/raw/`.
+
+### `src/features/preprocess.py`
+Contains deterministic preprocessing steps that do not learn from data, such as:
+- basic cleaning
+- issue date feature engineering
+- employment length transformation
+- ratio feature engineering
+- target split
+
+### `src/features/preprocessor.py`
+Builds the fit-ready preprocessing object using:
+- numeric branch
+- categorical branch
+- ColumnTransformer
+
+This file only builds the object. It does not fit it yet.
+
+### `src/pipeline/train_pipeline.py`
+Orchestrates the preprocessing workflow:
+- load data
+- apply deterministic transformations
+- split target
+- split train/test
+- identify numeric and categorical columns from `X_train`
+- build preprocessor
+- fit on `X_train`
+- transform `X_train` and `X_test`
+
+### `src/modeling/train.py`
+Contains model training logic. Right now, it trains a LightGBM classifier.
+
+### `src/modeling/evaluate.py`
+Contains model evaluation logic. It computes metrics such as:
+- ROC-AUC
+- accuracy
+- precision
+- recall
+- f1-score
+- confusion matrix
+- classification report
+
+### `src/persistence/save_artifacts.py`
+Handles persistence of:
+- trained model
+- fitted preprocessor
+- metrics
+
+### `src/main.py`
+Acts now only as the entry point. Its role is to:
+- call preprocessing pipeline
+- call training module
+- call evaluation module
+- call artifact saving module
+
+So `main.py` no longer contains the whole project logic inside itself.
+
+---
+
+## How the New Pipeline Works
+
+The current training flow is:
+
+1. load raw data
+2. apply deterministic transformations
+3. split features and target
+4. drop excluded columns
+5. split train/test
+6. detect numeric and categorical columns from `X_train`
+7. build the fit-ready preprocessor
+8. fit the preprocessor on `X_train`
+9. transform `X_train` and `X_test`
+10. train the LightGBM model
+11. evaluate the model on test data
+12. save artifacts and metrics
+
+This design is important because it keeps learned preprocessing steps inside the training workflow and avoids fitting them on the full dataset. That is one of the key improvements compared to the old one-file version.
 
 ---
 
@@ -89,141 +194,110 @@ conda activate lending-club-ml
 
 ## How to Run
 
-Run the main pipeline from the project root:
+Run the project from the root of the repository:
 
 ```bash
 python -m src.main
 ```
 
----
-## Current Pipeline Status
-
-| Step | Status |
-|---|---|
-| Raw data loading | ✅ Complete |
-| Basic cleaning | ✅ Complete |
-| Target splitting | ✅ Complete |
-| Feature dropping (non-useful columns) | ✅ Complete |
-| Train / test split | ✅ Complete |
-| One-hot encoding | ✅ Complete |
-| Feature alignment | ✅ Complete |
-| Baseline logistic regression training | ✅ Complete |
-| Baseline evaluation (accuracy, ROC-AUC, classification report, confusion matrix) | ✅ Complete |
-| Threshold tuning experiment | ✅ Complete |
-| LightGBM baseline training | Complete |
-| Threshold tunning (LightGBM) | Complete |
+This command now launches the full modular workflow:
+    - preprocessing pipeline
+    - LightGBM training
+    - model evaluation
+    - artifact saving
 
 ---
 
-## Planned Improvements
+## Saved Outputs
 
-- [ ] Improve feature engineering, especially date-related information such as `issue_d`
-- [ ] Compare model performance more systematically (Logistic vs LightGBM)
-- [ ] Save trained model artifacts (serialization)
-- [ ] Build a clean inference / prediction function
-- [ ] Prepare API exposure (FastAPI)
-- [ ] Dockerize the service
-- [ ] Add logging and request simulation
-- [ ] Deploy the model as a service
+After a successful run, the project saves:
+  - trained model
+  - fitted preprocessor
+  - metrics report
+
+Current output locations:
+```
+outputs/models/lightgbm_model.joblib
+outputs/preprocessors/preprocessor.joblib
+outputs/reports/metrics.json
+```
+This is an important step toward reproducibility, because results are no longer only printed to the console.
+
+---
+
+## Current Status
+
+At this stage, the modular training pipeline has been implemented and executed successfully end to end.
+That means the project now already has:
+  - modular preprocessing
+  - modular training
+  - modular evaluation
+  - artifact saving
+  - clean entry point
+  - documented refactoring process
+
+The architecture is now much closer to a real ML engineering project than it was at the beginning.
+
+### First End-to-End Run of the New Modular Pipeline
+
+The first successful run of the modular architecture produced the following main metrics:
+
+| Metric | Value |
+|--------|-------|
+| ROC-AUC | 0.6803 |
+| Recall | 0.0194 |
+| Precision | 0.5668 |
+
+**What this means:**
+
+From an engineering point of view, this is a success because the new architecture now works from start to finish.
+
+From a modeling point of view, the current threshold still makes the model too conservative for detecting defaults. So the pipeline is technically working, but the decision behavior still needs improvement. This is now a modeling decision issue, not an architecture issue.
 
 ---
 
 ## Documentation
 
-Additional project notes are available in the `docs/` folder:
+This repository contains step-by-step documentation of the refactoring and building process inside the `docs/` folder.
+The documentation tracks the project from:
+  - old monolithic script
+  - pipeline design
+  - preprocessor builder
+  - train pipeline creation
+  - training module
+  - evaluation module
+  - saving artifacts
+  - main entrypoint refactoring
 
-| File | Contents |
-|---|---|
-| `00-environment-setup.md` | Conda environment creation and activation steps |
-| `01-project-structure-and-paths.md` | Root path configuration and import patterns |
-| `02-columns.md` | Dataset column definitions and feature descriptions |
-| `03-launch-protocol.md` | Work session startup checklist and workflow |
-| `04-baseline-model-analysis.md` | Baseline model behavior, confusion matrix analysis, and threshold comparison |
+So the project is not only code, but also a written record of the reasoning behind each step.
+
+---
+
+## Planned Next Improvements
+
+The next improvements planned for this project are:
+
+    - inspect and improve the saved metrics workflow
+    - improve threshold handling in the modular architecture
+    - update metadata saving
+    - improve README and repo hygiene continuously
+    - add tests for pipeline stability
+    - build an inference / prediction workflow
+    - prepare the project for API exposure later
+    - move gradually toward MLOps-ready structure
 
 ---
 
 ## Purpose of This Repository
 
-> This repository demonstrates that strong ML projects combine model experimentation with clean engineering, reproducible environments, and clear documentation.
+This repository is not only about getting a model score.
+It is also about learning how to build a machine learning project properly:
+  - with separation of concerns
+  - with reproducible workflow
+  - with saved artifacts
+  - with modular structure
+  - with documentation of the engineering decisions
 
----
-
-## Baseline Model Results
-
-### Logistic Regression (default settings)
-
-- Accuracy: 0.8013
-- ROC-AUC: 0.5446
-- Recall (default class): 0.00
-
-**Observation:**  
-The model achieved high accuracy mainly by predicting almost all clients as non-default.  
-In practice, it completely failed to detect the default class, so this result was misleading and not useful for the real objective.
-
-### Logistic Regression (`class_weight="balanced"`)
-
-- Accuracy: 0.5434
-- ROC-AUC: 0.5911
-- Recall (default class): 0.61
-- Precision (default class): 0.24
-
-**Observation:**  
-Adding class weighting improved default detection significantly.  
-The model became more useful for catching risky clients, but it also created many false positives.
-
-### Threshold Tuning Summary
-
-To better understand model behavior, several thresholds were tested:
-
-| Threshold | Accuracy | Default Recall | Default Precision | Default F1 | Behavior |
-|---|---:|---:|---:|---:|---|
-| **0.3** | 0.21 | **0.99** | 0.20 | 0.33 | Too aggressive — flags almost everyone |
-| **0.5** | 0.54 | 0.61 | 0.24 | 0.35 | More balanced, but still weak |
-| **0.7** | **0.80** | 0.00 | 1.00 | 0.00 | Too strict — misses almost all defaults |
-
-### Key Insight
-
-These experiments showed three important things:
-
-- Accuracy alone is misleading in imbalanced classification
-- Threshold tuning changes how aggressive the model is
-- The threshold changes prediction behavior, but it does not improve the model itself
-
-This is clear because the ROC-AUC stayed around **0.59** across all thresholds, which means the baseline model is still weak overall.
-
-For the full detailed analysis, including confusion matrices and threshold-by-threshold interpretation, see: - `docs/04-baseline-model-analysis.md`
-
-## LightGBM Model Results
-
-A tree-based model, **LightGBM**, was introduced to improve performance on tabular data.
-
-### AUC Comparison
-
-- Logistic Regression: **0.59**
-- LightGBM: **0.67**
-
-This is a significant improvement and shows that LightGBM better separates risky and safe clients.
-
----
-
-### Threshold Tuning Summary — LightGBM
-
-| Threshold | Accuracy | Default Recall | Default Precision | Behavior |
-|---|---:|---:|---:|---|
-| **0.2** | 0.62 | **0.63** | 0.29 | Aggressive — catches many defaults |
-| **0.3** | 0.76 | 0.28 | 0.37 | More balanced |
-| **0.4** | 0.80 | 0.08 | 0.44 | Too conservative |
-| **0.5** | 0.80 | 0.01 | 0.46 | Nearly blind to defaults |
-
----
-
-### Key Insight
-
-LightGBM improves the model’s ability to distinguish risky clients from safe clients.
-
-However, threshold selection still strongly affects behavior:
-
-- Lower thresholds improve recall (catch more defaulters)
-- Higher thresholds reduce false positives but miss risky clients
-
-At this stage, **LightGBM with a lower threshold (around 0.2)** is more suitable for credit risk detection than Logistic Regression.
+So the purpose is both:
+  - build a useful credit risk model
+  - build strong ML engineering foundations for future real projects
