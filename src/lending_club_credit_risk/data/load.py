@@ -1,5 +1,5 @@
 import pandas as pd
-from src.config import RAW_DATA_DIR
+from lending_club_credit_risk.config import RAW_DATA_DIR
 
 
 def load_raw_data(filename: str) -> pd.DataFrame:

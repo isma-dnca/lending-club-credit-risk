@@ -7,7 +7,7 @@ from pathlib import Path
 # This resolve the path to the folder containing : 
 # src/, data/, notebooks/, README.md, etc.
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 #----------------------------------
 # Data Directories

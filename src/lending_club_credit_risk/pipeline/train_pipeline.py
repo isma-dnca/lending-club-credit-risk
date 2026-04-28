@@ -1,15 +1,15 @@
 from sklearn.model_selection import train_test_split
 
-from src.config import RANDOM_STATE
-from src.data.load import load_raw_data
-from src.features.preprocess import (
+from lending_club_credit_risk.config import RANDOM_STATE
+from lending_club_credit_risk.data.load import load_raw_data
+from lending_club_credit_risk.features.preprocess import (
     basic_cleaning,
     engineer_emp_length,
     engineer_issue_date_features,
     engineer_ratio_features,
     split_target,
 )
-from src.features.preprocessor import build_preprocessor
+from lending_club_credit_risk.features.preprocessor import build_preprocessor
 
 
 TARGET_COLUMN = "default"

@@ -1,5 +1,5 @@
 from lightgbm import LGBMClassifier
-from src.config import RANDOM_STATE
+from lending_club_credit_risk.config import RANDOM_STATE
 
 def train_lightgbm_model(X_train, y_train):
     """

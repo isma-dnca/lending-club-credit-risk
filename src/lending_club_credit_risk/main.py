@@ -1,12 +1,12 @@
-from src.config import PROJECT_ROOT
-from src.modeling.evaluate import evaluate_model
-from src.modeling.train import train_lightgbm_model
-from src.persistence.save_artifacts import (
+from lending_club_credit_risk.config import PROJECT_ROOT
+from lending_club_credit_risk.modeling.evaluate import evaluate_model
+from lending_club_credit_risk.modeling.train import train_lightgbm_model
+from lending_club_credit_risk.persistence.save_artifacts import (
     save_metrics,
     save_model,
     save_preprocessor,
 )
-from src.pipeline.train_pipeline import run_training_pipeline
+from lending_club_credit_risk.pipeline.train_pipeline import run_training_pipeline
 
 
 MODEL_OUTPUT_PATH = PROJECT_ROOT / "outputs" / "models" / "lightgbm_model.joblib"
