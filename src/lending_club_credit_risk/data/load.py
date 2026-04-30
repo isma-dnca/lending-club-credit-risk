@@ -1,14 +1,18 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 import pandas as pd
-from lending_club_credit_risk.config import RAW_DATA_DIR
 
 
-def load_raw_data(filename: str) -> pd.DataFrame:
-    """Load raw data from raw data directory.
-    
+def load_raw_data(file_path: str | Path) -> pd.DataFrame:
+    """
+    Load raw data from a given file path.
+
     Parameters
     ----------
-    filename : str
-        The name of the dataset file to load located in `data/raw/`.
+    file_path : str or Path
+        Path to the raw dataset file.
 
     Returns
     -------
@@ -17,16 +21,12 @@ def load_raw_data(filename: str) -> pd.DataFrame:
 
     Raises
     ------
-        FileNotFoundError
-            If the file does not exist in the raw data directory.
-
+    FileNotFoundError
+        If the dataset file does not exist.
     """
+    path = Path(file_path)
 
-    file_path = RAW_DATA_DIR / filename
+    if not path.exists():
+        raise FileNotFoundError(f"Dataset not found: {path}")
 
-    if not file_path.exists():
-        raise FileNotFoundError(
-            f"the file {filename} does not exist in the raw data directory.")
-    
-    return pd.read_csv(file_path, low_memory=False)
-
+    return pd.read_csv(path, low_memory=False)
