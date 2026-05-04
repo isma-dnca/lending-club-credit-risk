@@ -22,6 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8,<10",
+  "build>=1,<2",
 ]
 notebook = [
   "jupyterlab==4.3.1",
@@ -35,7 +36,7 @@ notebook = [
 lending-club-train = "lending_club_credit_risk.main:main"
 
 [tool.setuptools]
-package_dir = {"" = "src"}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

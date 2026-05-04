@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -28,3 +29,8 @@ data/processed/
 models/
 outputs/
 reports/
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
