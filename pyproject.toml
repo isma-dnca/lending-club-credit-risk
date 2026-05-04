@@ -1,19 +1,46 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "lending-club-credit-risk"
-version = "0.1.0"
-description = "Machine learning pipeline for Lending club credit risk prediction "
+version = "0.2.0"
+description = "Modular ML pipeline for LendingClub credit-risk prediction."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
     {name = "Ismail AIT-LAHSSEN"}
 ]
+dependencies = [
+  "numpy==1.26.0",
+  "pandas==2.1.1",
+  "scikit-learn==1.3.0",
+  "lightgbm>=4,<5",
+  "joblib>=1.3,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<10",
+]
+notebook = [
+  "jupyterlab==4.3.1",
+  "ipykernel>=6,<7",
+  "matplotlib==3.8.0",
+  "seaborn==0.12.2",
+  "tqdm>=4,<5",
+]
+
+[project.scripts]
+lending-club-train = "lending_club_credit_risk.main:main"
 
 [tool.setuptools]
 package_dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["lending_club_credit_risk*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
