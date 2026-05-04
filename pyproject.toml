@@ -36,7 +36,7 @@ notebook = [
 lending-club-train = "lending_club_credit_risk.main:main"
 
 [tool.setuptools]
-package_dir = {"" = "src"}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
