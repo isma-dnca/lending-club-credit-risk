@@ -40,3 +40,38 @@ Inference must not:
 - split train/test
 - require the target column
 - call the full training pipeline
+
+## Section 2 -- Module Structure
+
+Inference should be introduced as its own package inside the main project package.
+The new module should live at:
+```bash
+src/lending_club_credit_risk/inference/
+```
+At this level the inference package may look small like this:
+```text
+src/lending_club_credit_risk/inference/
+├── __init__.py
+└── predict.py
+```
+The role of `__init__.py` is only to make the directory as a Python package. and it should not contain any inference logic and can be minimal for first version.
+
+The main inference workflow should live inside `predict.py` file. Its responsibilities are:
+-   loading saved artifacts
+-   applying deterministic preprocessing for new raw data
+-   transforming data with the saved fitted preprocessor
+-   generating predicted probabilities
+-   converting predicted probabilities into predicted classes using a threshold
+-   formatting prediction results
+
+Also the inference package must stay focused on prediction behavior only. It means that other responsibilities like model taring, evaluation report and other reps must stay in their own module.
+This module structure is intentionally simple because it is meant to become the reusable base for later chapters such as:
+- prediction CLI
+- FastAPI service
+- Dockerized inference
+- deployment
+
+
+
+
+
