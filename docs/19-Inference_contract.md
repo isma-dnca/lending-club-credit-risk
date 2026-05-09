@@ -71,7 +71,46 @@ This module structure is intentionally simple because it is meant to become the 
 - Dockerized inference
 - deployment
 
+---
 
 
+## Section 3 -- Core Inference workflow
 
+The inference workflow should start from raw input data so it should and must remain consistent with training data workflow, which means it must follow the prediction path used during training.
 
+So the workflow should follow this order:
+1. load raw input data from a CSV file
+2. apply deterministic preprocessing
+3. drop excluded non-modeling columns
+4. load the saved fitted preprocessor
+5. transform the processed input with the saved preprocessor
+6. load the saved trained model
+7. generate predicted probabilities
+8. convert probabilities into predicted classes using a threshold
+9. format and return prediction outputs
+
+The deterministic preprocessing must use the same logic function used during training, This is important because the saved preprocessor expects the feature structure produced after those deterministic transformations:
+- `basic_cleaning`
+- `engineer_issue_date_features`
+- `engineer_emp_length`
+- `engineer_ratio_features`
+  
+Also to remain aligned with teh trained feature space, the workflow must also reuse the same excluded column policy.
+
+As declared before, the first inference version should produces outputs containing at least:
+- `default_probability`
+- `predicted_default`
+
+So far we know what must the workflow contain and what can look like. Also in the same angle we need to explicitly declare and specify what must not contained in the inference workflow, such as:
+- retrain the model
+- refit the preprocessor
+- split train/test
+- require the target column
+- call the full training pipeline
+  
+This workflow is designed to become the reusable prediction core for for later ops that will come like:
+- prediction CLI
+- FastAPI service
+- Dockerized inference
+- deployment
+  
