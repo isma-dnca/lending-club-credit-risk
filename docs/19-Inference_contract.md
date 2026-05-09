@@ -114,3 +114,54 @@ This workflow is designed to become the reusable prediction core for for later o
 - Dockerized inference
 - deployment
   
+---
+
+## Test Strategy
+
+The inference tests should live in the same root test suite structure as the rest of the project.
+so the file could live here:
+```text
+tests/test_inference.py
+```
+this place is a must and logic because inference is part the core package, it belongs to `\tests` folder which is logic, and it should run the SAME `pytest` and CI workflow as the rest of the repo.
+Also the tests should rely on small synthetics CSV files, temporary saved artifacts, and temporary output paths. But Never the full real dataset or existing local artifacts from manual runs.
+
+
+1. Positive & Happy Inference test:
+   if the inference test can :
+    - load a raw CSV input file
+    - apply deterministic preprocessing
+    - load the saved fitted preprocessor
+    - load the saved trained model
+    - generate predicted probabilities 
+    - generate predicted classes
+    - return outputs with the expected structure
+  then the inference can be considered happy and positive
+  Also the output should contain at least:
+    - `default_probability`
+    - `predicted_default`
+
+2. Threshold behavior test
+    The model should use the threshold to decide which class to predict. A test should check that this is actually happening and not being skipped.
+
+3. Missing artifact failure tests
+    When the model runs, it needs certain saved files to work. Tests should check that if one of these files is missing, either the model file or the preprocessor file, the process fails with a clear error message, not a confusing one. So failures should produce explicit and understandable errors.
+
+4. Invalid Input schema test
+    When bad or incomplete data is given as input, for example, a required column is missing, the model should fail with a clear error. At least one test should check this, to make sure invalid inputs are caught early.
+
+5. Output contract test
+
+    The inference output should be validated structurally.
+
+    Tests should verify:
+    - expected columns exist 
+    - output row count matches input row count
+    - probability output is present
+    - class predictions are present
+  
+    At this level of this project, this first version of inference testing does not need to include:
+    - API endpoint tests
+    - deployment tests
+    - performance tests
+  The purpose of this test strategy is to protect the local package-level inference workflow before prediction CLI, API, and deployment layers are added.
