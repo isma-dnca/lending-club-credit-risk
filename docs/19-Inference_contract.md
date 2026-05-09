@@ -165,3 +165,63 @@ Also the tests should rely on small synthetics CSV files, temporary saved artifa
     - deployment tests
     - performance tests
   The purpose of this test strategy is to protect the local package-level inference workflow before prediction CLI, API, and deployment layers are added.
+
+  ---
+
+  ## Implementation order and Definition of Done
+
+  The inference layer should be implemented in controlled order by following a logic workflow and a clear boundaries step by step.
+
+  So the implementation order can be as follow:
+   1. create the `inference/` package structure
+   2. add artifact loading helpers
+   3. add raw input preparation and deterministic preprocessing reuse
+   4. add the main prediction workflow
+   5. add inference tests
+   6. verify local inference behavior
+   7. verify that the full project test suite still passes
+
+The detailed implementation can be as follow
+### Phase A: Structure
+- create `src/lending_club_credit_risk/inference/`
+- create `__init__.py`
+- create `predict.py`
+
+### Phase B: Artifact loading
+- load saved model
+- load saved fitted preprocessor
+
+### Phase C: Input preparation
+- load raw inference CSV
+- apply deterministic preprocessing
+- drop excluded non-modeling columns
+
+### Phase D: Prediction logic
+- transform input using the saved preprocessor
+- generate predicted probabilities
+- convert probabilities into predicted classes using threshold
+- format prediction outputs
+
+### Phase E: Testing
+- add happy-path inference test
+- add threshold behavior test
+- add missing artifact tests
+- add invalid input tests
+- validate output contract
+  
+### Phase F: Verification
+- run inference tests locally
+- run the full project test suite
+- confirm the repository still behaves correctly as a whole
+
+### Definition of Done
+- the repository has a dedicated inference module
+- saved model and preprocessor artifacts can be reused
+- new raw CSV input can be scored
+- probabilities and predicted classes are returned
+- threshold is configurable and respected
+- inference behavior is protected by automated tests
+- the full project test suite still passes
+
+Once all those conditions are true then the repo will be ready to move to the next chapter :
+- prediction CLI.
