@@ -42,3 +42,10 @@ TEST_SIZE = float(os.getenv("LCCR_TEST_SIZE", "0.2"))
 DEFAULT_THRESHOLD = float(os.getenv("LCCR_THRESHOLD", "0.5"))
 TARGET_COLUMN = os.getenv("LCCR_TARGET_COLUMN", "default")
 COLUMNS_TO_DROP = ("id", "title", "desc", "zip_code")
+
+#-----------------------------------------------|
+# Default artifact output paths                 |
+#-----------------------------------------------|
+DEFAULT_MODEL_PATH = OUTPUT_DIR / "models" / "lightgbm_model.joblib"
+DEFAULT_PREPROCESSOR_PATH = OUTPUT_DIR / "preprocessors" / "preprocessor.joblib"
+DEFAULT_METRICS_PATH = OUTPUT_DIR / "reports" / "metrics.json"
