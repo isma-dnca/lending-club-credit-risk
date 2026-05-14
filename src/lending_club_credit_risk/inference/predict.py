@@ -5,7 +5,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-from lending_club_credit_risk.config import COLUMNS_TO_DROP, OUTPUT_DIR, DEFAULT_THRESHOLD
+from lending_club_credit_risk.config import COLUMNS_TO_DROP, DEFAULT_THRESHOLD, DEFAULT_MODEL_PATH, DEFAULT_PREPROCESSOR_PATH
 from lending_club_credit_risk.features.preprocess import (
     basic_cleaning,
     engineer_emp_length,
@@ -13,15 +13,13 @@ from lending_club_credit_risk.features.preprocess import (
     engineer_issue_date_features,
 )
 
-DEFAULT_MODEL_PATH = OUTPUT_DIR / "models" / "lightgbm_model.joblib"
-DEFAULT_PREPROCESSOR_PATH = OUTPUT_DIR / "preprocessors" / "preprocessor.joblib"
 
 def _load_model(model_path: str | Path):
     """
     Load a trained model from disk.
     """
 
-    path =  Path(model_path)
+    path = Path(model_path)
 
     if not path.exists():
         raise FileNotFoundError(f"Model file not found at {path}")
@@ -30,7 +28,7 @@ def _load_model(model_path: str | Path):
 
 def _load_preprocessor(preprocessor_path: str | Path):
     """
-    load a fitted preprocessor from disk.
+    Load a fitted preprocessor from disk.
     """
 
     path = Path(preprocessor_path)
@@ -69,7 +67,8 @@ def _prepare_inference_input(
     df = engineer_emp_length(df)
     df = engineer_ratio_features(df)
 
-    row_ids = df["id"] if "id" in df.columns else None # If dataset has ids, preserve them for later use in output, otherwise return None. Because after prediction we may want to connect each outcome to the original row in the input data, and the `id` column is the best way to do that.
+    # Preserve row identifiers (if they exist) so predictions can be linked back to input rows.
+    row_ids = df["id"] if "id" in df.columns else None
 
     X = df.drop(columns=list(columns_to_drop), errors="ignore")
 
