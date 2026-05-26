@@ -1,5 +1,8 @@
 import pandas as pd
+<<<<<<< HEAD
 from pathlib import Path
+=======
+>>>>>>> cb9dce4f3841131a22c9170f178fec79eef78c82
 from fastapi import FastAPI
 
 from lending_club_credit_risk.api.schemas import (
@@ -8,7 +11,10 @@ from lending_club_credit_risk.api.schemas import (
     PredictionRequest,
 )
 from lending_club_credit_risk.inference.predict import predict_from_dataframe
+<<<<<<< HEAD
 from lending_club_credit_risk.config import DEFAULT_MODEL_PATH, DEFAULT_PREPROCESSOR_PATH
+=======
+>>>>>>> cb9dce4f3841131a22c9170f178fec79eef78c82
 
 
 def create_app(
@@ -39,7 +45,11 @@ def create_app(
         """
         request_data = request.model_dump()
         df = pd.DataFrame([request_data])
+<<<<<<< HEAD
         results = predict_from_dataframe(model_path=model_path, preprocessor_path=preprocessor_path, df=df)
+=======
+        results = predict_from_dataframe(df=df)
+>>>>>>> cb9dce4f3841131a22c9170f178fec79eef78c82
         result_row = results.iloc[0]
 
         return PredictionResponse(
